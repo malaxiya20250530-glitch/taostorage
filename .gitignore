@@ -1,0 +1,41 @@
+# ─── Node ────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+.yarn/
+yarn-error.log*
+.pnpm-store/
+
+# ─── Data (user data, keep .gitkeep) ─────────────────
+data/
+!data/.gitkeep
+
+# ─── Backups ─────────────────────────────────────────
+tao-backup.json
+*.backup.json
+backups/
+exports/
+
+# ─── IDE / Editor ────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+.vs/
+
+# ─── OS ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.log
+
+# ─── Env ─────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ─── Build ──────────────────────────────────────────
+dist/
+build/
+*.tgz

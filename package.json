@@ -1,0 +1,45 @@
+{
+  "name": "taostorage",
+  "version": "0.2.0",
+  "description": "📦 Personal Data Warehouse CLI — zero dependencies, SQLite-powered",
+  "type": "module",
+  "main": "bin/tao.js",
+  "bin": {
+    "tao": "./bin/tao.js"
+  },
+  "scripts": {
+    "tao": "node bin/tao.js",
+    "init": "node bin/tao.js init",
+    "start": "node bin/tao.js"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "keywords": [
+    "storage",
+    "cli",
+    "sqlite",
+    "termux",
+    "personal-database",
+    "data-warehouse",
+    "zero-dependencies",
+    "node-sqlite"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/malaxiya20250530-glitch/taostorage.git"
+  },
+  "bugs": {
+    "url": "https://github.com/malaxiya20250530-glitch/taostorage/issues"
+  },
+  "homepage": "https://github.com/malaxiya20250530-glitch/taostorage#readme",
+  "author": "malaxiya20250530-glitch",
+  "files": [
+    "bin/",
+    "core/",
+    "config.json",
+    "LICENSE",
+    "README.md"
+  ]
+}
