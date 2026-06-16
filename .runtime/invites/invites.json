@@ -1,0 +1,20 @@
+{
+  "EB88646D": {
+    "code": "EB88646D",
+    "inviter": "genesis-node-1",
+    "created_at": 1781653560,
+    "expires_at": 1782258360,
+    "uses": 1,
+    "max_uses": 0,
+    "active": true
+  },
+  "D1FAEE12": {
+    "code": "D1FAEE12",
+    "inviter": "genesis-node-2",
+    "created_at": 1781653560,
+    "expires_at": 1782258360,
+    "uses": 0,
+    "max_uses": 0,
+    "active": true
+  }
+}
