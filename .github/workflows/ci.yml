@@ -2,12 +2,12 @@ name: CI — 道可道
 
 on:
   push:
-    branches: [ master, main, develop ]
+    branches: [ main, develop ]
     paths-ignore:
       - '**.md'
       - 'docs/**'
   pull_request:
-    branches: [ master, main ]
+    branches: [ main ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -20,28 +20,25 @@ jobs:
   check:
     name: 🔍 Check & Test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        rust: [ stable, nightly ]
     steps:
       - uses: actions/checkout@v4
 
-      - name: 🦀 Setup Rust ${{ matrix.rust }}
+      - name: 🦀 Setup Rust (stable)
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: ${{ matrix.rust }}
+          toolchain: stable
           components: rustfmt, clippy
 
       - name: 📦 Cache Cargo
         uses: Swatinem/rust-cache@v2
 
-      - name: 🔨 Build all crates
-        run: cargo build --workspace --all-targets
+      - name: 🔨 Build
+        run: cargo build --workspace
 
-      - name: 🧪 Run tests
+      - name: 🧪 Test
         run: cargo test --workspace
 
-      - name: ✨ Check formatting
+      - name: ✨ Format check
         run: cargo fmt --all -- --check
 
       - name: 🕵️ Clippy
@@ -62,43 +59,30 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: 📦 Install wasm-pack
-        run: curl -fsSL https://rustwasm.github.io/wasm-pack/installer/init.sh | sh
+        run: |
+          curl -fsSL https://rustwasm.github.io/wasm-pack/installer/init.sh | sh -s -- -y
 
-      - name: 🔨 Build browser WASM
+      - name: 🔨 Build WASM
         run: wasm-pack build www/tao-browser --target web --out-dir ../pkg
 
-      - name: 📦 Upload WASM artifact
+      - name: 📤 Upload WASM
         uses: actions/upload-artifact@v4
         with:
           name: tao-wasm-pkg
           path: www/pkg/
 
   # ============================================================
-  # 跨平台二进制构建
+  # Linux 构建 (原生)
   # ============================================================
-  build:
-    name: 📦 Build ${{ matrix.target }}
-    runs-on: ${{ matrix.os }}
+  build-linux:
+    name: 📦 Linux (${{ matrix.target }})
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - target: aarch64-unknown-linux-gnu
-            os: ubuntu-latest
-            cross: true
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
-            cross: false
-          - target: x86_64-apple-darwin
-            os: macos-latest
-            cross: false
-          - target: aarch64-apple-darwin
-            os: macos-latest
-            cross: false
-          - target: x86_64-pc-windows-msvc
-            os: windows-latest
-            cross: false
-
+        target:
+          - x86_64-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
     steps:
       - uses: actions/checkout@v4
 
@@ -107,26 +91,81 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: 📦 Cache Cargo
+      - name: 📦 Cache
         uses: Swatinem/rust-cache@v2
 
       - name: 🔧 Install cross
-        if: matrix.cross
-        run: cargo install cross
+        if: ${{ matrix.target != 'x86_64-unknown-linux-gnu' }}
+        run: cargo install cross --git https://github.com/cross-rs/cross
 
       - name: 🔨 Build (cross)
-        if: matrix.cross
+        if: ${{ matrix.target != 'x86_64-unknown-linux-gnu' }}
         run: cross build --release --target ${{ matrix.target }} --bin tao
 
       - name: 🔨 Build (native)
-        if: !matrix.cross
-        run: cargo build --release --target ${{ matrix.target }} --bin tao
+        if: ${{ matrix.target == 'x86_64-unknown-linux-gnu' }}
+        run: cargo build --release --bin tao
 
-      - name: 📤 Upload binary
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: tao-${{ matrix.target }}
-          path: target/${{ matrix.target }}/release/tao${{ matrix.target == 'x86_64-pc-windows-msvc' && '.exe' || '' }}
+          path: target/${{ matrix.target }}/release/tao
+
+  # ============================================================
+  # macOS 构建
+  # ============================================================
+  build-macos:
+    name: 📦 macOS (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-apple-darwin
+            os: macos-13
+          - target: aarch64-apple-darwin
+            os: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: 📦 Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: 🔨 Build
+        run: cargo build --release --target ${{ matrix.target }} --bin tao
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tao-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/tao
+
+  # ============================================================
+  # Windows 构建
+  # ============================================================
+  build-windows:
+    name: 📦 Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 📦 Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: 🔨 Build
+        run: cargo build --release --bin tao
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tao-x86_64-pc-windows-msvc
+          path: target/release/tao.exe
 
   # ============================================================
   # 安全审计
@@ -136,9 +175,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: 🦀 Setup Rust
         uses: dtolnay/rust-toolchain@stable
-      - name: 📦 Install cargo-audit
-        run: cargo install cargo-audit
+
       - name: 🔍 Audit
-        run: cargo audit
+        uses: actions-rust-lang/audit@v1

@@ -7,41 +7,20 @@ on:
 
 permissions:
   contents: write
-  packages: write
 
 jobs:
-  release:
-    name: 🚀 Release ${{ matrix.target }}
-    runs-on: ${{ matrix.os }}
+  # ============================================================
+  # Linux
+  # ============================================================
+  release-linux:
+    name: 🐧 Linux ${{ matrix.target }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - target: aarch64-unknown-linux-gnu
-            os: ubuntu-latest
-            suffix: ''
-            cross: true
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
-            suffix: ''
-            cross: false
-          - target: aarch64-linux-android
-            os: ubuntu-latest
-            suffix: ''
-            cross: true
-          - target: x86_64-apple-darwin
-            os: macos-latest
-            suffix: ''
-            cross: false
-          - target: aarch64-apple-darwin
-            os: macos-latest
-            suffix: ''
-            cross: false
-          - target: x86_64-pc-windows-msvc
-            os: windows-latest
-            suffix: '.exe'
-            cross: false
-
+        target:
+          - x86_64-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
     steps:
       - uses: actions/checkout@v4
 
@@ -50,51 +29,118 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: 📦 Cache Cargo
+      - name: 📦 Cache
         uses: Swatinem/rust-cache@v2
 
       - name: 🔧 Install cross
-        if: matrix.cross
-        run: cargo install cross
+        if: ${{ matrix.target != 'x86_64-unknown-linux-gnu' }}
+        run: cargo install cross --git https://github.com/cross-rs/cross
 
       - name: 🔨 Build (cross)
-        if: matrix.cross
+        if: ${{ matrix.target != 'x86_64-unknown-linux-gnu' }}
         run: cross build --release --target ${{ matrix.target }} --bin tao
 
       - name: 🔨 Build (native)
-        if: !matrix.cross
-        run: cargo build --release --target ${{ matrix.target }} --bin tao
+        if: ${{ matrix.target == 'x86_64-unknown-linux-gnu' }}
+        run: cargo build --release --bin tao
 
       - name: 📦 Package
-        shell: bash
         run: |
-          cd target/${{ matrix.target }}/release
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            7z a ../../tao-${{ matrix.target }}.zip tao${{ matrix.suffix }}
-          else
-            tar czf ../../tao-${{ matrix.target }}.tar.gz tao${{ matrix.suffix }}
-          fi
+          mkdir -p dist
+          cp target/${{ matrix.target }}/release/tao dist/tao
+          cd dist && tar czf ../tao-${{ matrix.target }}.tar.gz tao
 
-      - name: 📤 Upload to Release
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/v')
+      - uses: softprops/action-gh-release@v2
         with:
           files: tao-${{ matrix.target }}.tar.gz
           generate_release_notes: true
           body: |
             ## 🦀 TaoStorage ${{ github.ref_name }}
 
-            > 道可道，非常道 — 个人数据仓库 CLI + 分布式存储网络
+            > 道可道，非常道 — 个人数据仓库 + 分布式 P2P 存储网络
 
-            ### 📦 下载
-            选择对应平台的二进制文件，解压后运行 `./tao`。
-
-            ### 🚀 快速开始
+            ### 🚀 一键安装
             ```bash
-            ./tao init
-            ./tao put 道 "道可道，非常道"
-            ./tao get 道
-            ./tao daemon start
+            curl -fsSL https://tao.storage/install.sh | bash
             ```
 
-            完整安装：`curl -fsSL https://tao.storage/install.sh | bash`
+            ### 🌐 浏览器节点
+            打开 https://tao.storage 即可成为 P2P 节点，无需安装。
+
+            ### 📦 下载二进制
+            根据你的平台下载对应文件，解压后运行 `./tao`。
+
+            ### 快速开始
+            ```bash
+            ./tao put 道 "道可道，非常道"
+            ./tao get 道
+            ./tao daemon start --network
+            ```
+
+            ### 变更日志
+            详见 [CHANGELOG.md](https://github.com/malaxiya20250530-glitch/taostorage/blob/main/CHANGELOG.md)
+
+  # ============================================================
+  # macOS
+  # ============================================================
+  release-macos:
+    name: 🍎 macOS ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-apple-darwin
+            os: macos-13
+          - target: aarch64-apple-darwin
+            os: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: 📦 Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: 🔨 Build
+        run: cargo build --release --target ${{ matrix.target }} --bin tao
+
+      - name: 📦 Package
+        run: |
+          mkdir -p dist
+          cp target/${{ matrix.target }}/release/tao dist/tao
+          cd dist && tar czf ../tao-${{ matrix.target }}.tar.gz tao
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: tao-${{ matrix.target }}.tar.gz
+
+  # ============================================================
+  # Windows
+  # ============================================================
+  release-windows:
+    name: 🪟 Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 📦 Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: 🔨 Build
+        run: cargo build --release --bin tao
+
+      - name: 📦 Package
+        shell: pwsh
+        run: |
+          Compress-Archive -Path target/release/tao.exe -DestinationPath tao-x86_64-pc-windows-msvc.zip
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: tao-x86_64-pc-windows-msvc.zip
