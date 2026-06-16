@@ -1,0 +1,77 @@
+# ============================================================
+# 🦀 TaoStorage Docker Compose — 一键启动 P2P 网络集群
+# ============================================================
+# 启动: docker compose up -d
+# 查看: docker compose logs -f
+# 停止: docker compose down
+# ============================================================
+
+version: "3.8"
+
+services:
+  # ---- 引导节点 ----
+  bootstrap:
+    build: .
+    container_name: tao-bootstrap
+    ports:
+      - "8788:8788"   # HTTP API
+      - "3000:3000"   # 浏览器节点
+    volumes:
+      - tao-bootstrap-data:/root/.taostorage
+    environment:
+      - NODE_ID=bootstrap-node
+      - TAO_ROLE=bootstrap
+    command: >
+      sh -c "tao daemon start --network --listen /ip4/0.0.0.0/tcp/8789 &&
+             cd /opt/taostorage/www/signaling-server &&
+             node server.js"
+    networks:
+      - tao-net
+
+  # ---- 存储节点 A ----
+  node-a:
+    build: .
+    container_name: tao-node-a
+    ports:
+      - "8781:8788"
+    volumes:
+      - tao-node-a-data:/root/.taostorage
+    environment:
+      - NODE_ID=node-a
+    depends_on:
+      - bootstrap
+    command: >
+      sh -c "sleep 2 &&
+             tao daemon start --network --bootstrap /dns4/bootstrap/tcp/8789 &&
+             tao put 道 '道可道，非常道' --tag welcome --tag tao &&
+             tao put 阴阳 '一阴一阳之谓道' --tag philosophy"
+    networks:
+      - tao-net
+
+  # ---- 存储节点 B ----
+  node-b:
+    build: .
+    container_name: tao-node-b
+    ports:
+      - "8782:8788"
+    volumes:
+      - tao-node-b-data:/root/.taostorage
+    environment:
+      - NODE_ID=node-b
+    depends_on:
+      - bootstrap
+    command: >
+      sh -c "sleep 4 &&
+             tao daemon start --network --bootstrap /dns4/bootstrap/tcp/8789 &&
+             tao get 道"
+    networks:
+      - tao-net
+
+volumes:
+  tao-bootstrap-data:
+  tao-node-a-data:
+  tao-node-b-data:
+
+networks:
+  tao-net:
+    driver: bridge

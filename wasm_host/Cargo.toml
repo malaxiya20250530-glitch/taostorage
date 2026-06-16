@@ -1,0 +1,11 @@
+[package]
+name = "tao-wasm-host"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+wasmi = "0.39"
+anyhow.workspace = true

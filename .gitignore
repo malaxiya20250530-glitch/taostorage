@@ -1,0 +1,28 @@
+# Rust
+target/
+Cargo.lock
+
+# Node
+node_modules/
+www/pkg/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TaoStorage runtime data (keep in ~/.taostorage/)
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+*.log
+
+# Generated files
+tao-backup*.json

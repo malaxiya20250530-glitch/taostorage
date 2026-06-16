@@ -1,0 +1,19 @@
+[package]
+name = "tao-network"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+tao-core = { path = "../core" }
+tao-crypto = { path = "../crypto" }
+serde.workspace = true
+bincode.workspace = true
+tokio.workspace = true
+async-trait.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+rand.workspace = true
+sha2.workspace = true
+libp2p.workspace = true
+hex.workspace = true

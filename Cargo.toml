@@ -1,0 +1,50 @@
+[workspace]
+resolver = "2"
+members = [
+    "core",
+    "crypto",
+    "network",
+    "consensus",
+    "wasm_host",
+    "node",
+    "cli",
+    "rules/default_qi",
+    "invite-system",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+bincode = "1"
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"
+anyhow = "1"
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+rand = "0.8"
+sha2 = "0.10"
+blake3 = "1"
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+x25519-dalek = "2"
+chacha20poly1305 = "0.10"
+libp2p = { version = "0.54", features = ["full"] }
+libp2p-stream = "0.2"
+wasmtime = "25"
+sled = "0.34"
+hex = "0.4"
+bs58 = "0.5"
+multihash = "0.19"
+unsigned-varint = "0.8"
+reed-solomon-erasure = "4"
+clap = { version = "4", features = ["derive"] }
+toml = "0.8"
+axum = { version = "0.8", features = ["json"] }
+tower-http = { version = "0.6", features = ["cors"] }
+uuid = { version = "1", features = ["v4"] }
+chrono = "0.4"

@@ -1,0 +1,15 @@
+[package]
+name = "tao-consensus"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+tao-core = { path = "../core" }
+tao-crypto = { path = "../crypto" }
+serde.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+rand.workspace = true
+sha2.workspace = true
+sled.workspace = true
+bincode.workspace = true

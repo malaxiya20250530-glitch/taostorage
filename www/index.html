@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦀 TaoStorage — 浏览器P2P存储节点</title>
+    <meta name="description" content="TaoStorage 浏览器 P2P 节点 — 道可道，非常道。在浏览器中运行分布式存储节点。">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- ====== 导航栏 ====== -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-icon">🦀</span>
+            <span class="logo-text">TaoStorage</span>
+            <span class="logo-sub">道可道</span>
+        </div>
+        <div class="node-status" id="nodeStatus">
+            <span class="status-dot offline"></span>
+            <span class="status-text">未连接</span>
+        </div>
+    </header>
+
+    <!-- ====== 英雄区 ====== -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-animation" id="heroAnimation">
+                <div class="tao-symbol">☯</div>
+            </div>
+            <h1>你的数据，<span class="highlight">你的道</span></h1>
+            <p class="hero-subtitle">浏览器即节点 — 每个访问者都是 P2P 存储网络的一部分</p>
+            <div class="hero-actions">
+                <button class="btn btn-primary" id="btnStartNode" onclick="initNode()">
+                    🌐 启动节点
+                </button>
+                <button class="btn btn-secondary" id="btnInvite" onclick="createInvite()">
+                    📤 邀请
+                </button>
+            </div>
+        </div>
+        <div class="hero-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="globalNodes">0</div>
+                <div class="stat-label">全球节点</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="storedObjects">0</div>
+                <div class="stat-label">存储对象</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="myPeers">0</div>
+                <div class="stat-label">我的对等节点</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== 主内容区 ====== -->
+    <main class="main-content">
+        <!-- 左侧：数据操作 -->
+        <section class="panel panel-data" id="panelData">
+            <h2>📦 我的数据</h2>
+
+            <div class="data-form">
+                <div class="form-row">
+                    <input type="text" id="inputKey" placeholder="Key (如: 道、阴阳、万物)" class="input">
+                    <input type="text" id="inputValue" placeholder="Value (数据内容)" class="input input-wide">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="inputTags" placeholder="标签 (逗号分隔, 如: philosophy,tao)" class="input">
+                    <button class="btn btn-accent" onclick="putData()">📝 写入</button>
+                </div>
+            </div>
+
+            <div class="data-search">
+                <input type="text" id="inputSearch" placeholder="🔍 搜索数据..." class="input input-wide" oninput="searchData()">
+            </div>
+
+            <div class="data-list" id="dataList">
+                <div class="empty-state">
+                    <span class="empty-icon">☯</span>
+                    <p>暂无数据 — 写入你的第一条"道"</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 右侧：节点信息 -->
+        <section class="panel panel-node" id="panelNode">
+            <h2>🌐 节点信息</h2>
+
+            <div class="node-info">
+                <div class="info-row">
+                    <span class="info-label">节点 ID</span>
+                    <span class="info-value mono" id="nodeId">—</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">网络</span>
+                    <span class="info-value" id="networkStatus">离线</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">信令服务器</span>
+                    <span class="info-value" id="signalingStatus">未连接</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">对等节点</span>
+                    <span class="info-value" id="peerCount">0</span>
+                </div>
+            </div>
+
+            <div class="peer-list" id="peerList">
+                <h3>🤝 在线对等节点</h3>
+                <div class="empty-state small">
+                    <p>等待连接...</p>
+                </div>
+            </div>
+
+            <div class="node-actions">
+                <button class="btn btn-outline" onclick="exportBackup()">💾 导出备份</button>
+                <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📂 导入备份</button>
+                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
+                <button class="btn btn-danger" onclick="clearData()">🗑️ 清空</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- ====== 邀请弹窗 ====== -->
+    <div class="modal-overlay" id="inviteModal">
+        <div class="modal">
+            <h2>📤 邀请好友加入网络</h2>
+            <p>让更多人加入，网络越强！</p>
+            <div class="invite-box">
+                <input type="text" id="inviteLink" readonly class="input input-wide" onclick="this.select()">
+                <button class="btn btn-primary" onclick="copyInvite()">📋 复制</button>
+            </div>
+            <p class="invite-hint">每邀请一人，节点信誉 +1 🏆</p>
+            <button class="btn btn-ghost" onclick="closeModal()">关闭</button>
+        </div>
+    </div>
+
+    <!-- ====== 导入脚本 ====== -->
+    <script type="module">
+        import init, { TaoBrowserNode, generate_node_id } from './pkg/tao_browser.js';
+
+        // ============================================================
+        // 全局状态
+        // ============================================================
+        window.taoNode = null;
+        window.peerConnections = new Map();
+
+        // ============================================================
+        // 初始化 WASM
+        // ============================================================
+        async function initWasm() {
+            try {
+                await init();
+                console.log('🦀 TaoStorage WASM 已加载');
+                return true;
+            } catch (e) {
+                console.error('WASM 加载失败:', e);
+                return false;
+            }
+        }
+
+        // ============================================================
+        // 启动节点
+        // ============================================================
+        window.initNode = async function() {
+            const statusEl = document.getElementById('nodeStatus');
+            const btn = document.getElementById('btnStartNode');
+
+            btn.disabled = true;
+            btn.textContent = '⏳ 启动中...';
+
+            const wsLoaded = await initWasm();
+            if (!wsLoaded) {
+                // 降级模式：不使用 WASM，用 JS 实现
+                console.log('使用 JS 降级模式');
+                window.taoNode = new JsTaoNode();
+            } else {
+                window.taoNode = new TaoBrowserNode();
+            }
+
+            // 更新 UI
+            document.getElementById('nodeId').textContent = window.taoNode.get_node_id();
+
+            statusEl.querySelector('.status-dot').className = 'status-dot online';
+            statusEl.querySelector('.status-text').textContent = '运行中';
+
+            btn.textContent = '✅ 节点已启动';
+            btn.classList.add('success');
+
+            // 连接信令服务器
+            tryConnectSignaling();
+
+            // 更新全局节点计数
+            updateGlobalStats();
+
+            console.log('🦀 节点启动成功:', window.taoNode.get_node_id());
+        };
+
+        // ============================================================
+        // 信令服务器连接
+        // ============================================================
+        async function tryConnectSignaling() {
+            const wsUrl = getSignalingUrl();
+            if (!wsUrl) return;
+
+            try {
+                if (window.taoNode && window.taoNode.connect_signaling) {
+                    await window.taoNode.connect_signaling(wsUrl);
+                    document.getElementById('signalingStatus').textContent = '已连接 ✅';
+                }
+            } catch (e) {
+                console.log('信令服务器暂不可用 (P2P 功能降级为本地模式)');
+                document.getElementById('signalingStatus').textContent = '本地模式';
+            }
+        }
+
+        function getSignalingUrl() {
+            const loc = window.location;
+            const wsProtocol = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+            return `${wsProtocol}//${loc.host}/ws`;
+        }
+
+        // ============================================================
+        // 数据操作
+        // ============================================================
+        window.putData = function() {
+            const key = document.getElementById('inputKey').value.trim();
+            const value = document.getElementById('inputValue').value.trim();
+            const tagsStr = document.getElementById('inputTags').value.trim();
+
+            if (!key || !value) {
+                alert('请输入 Key 和 Value');
+                return;
+            }
+
+            if (!window.taoNode) {
+                alert('请先点击"启动节点"');
+                return;
+            }
+
+            const tags = tagsStr ? tagsStr.split(/[,，]\s*/) : [];
+            const id = window.taoNode.put(key, value, tags);
+
+            document.getElementById('inputKey').value = '';
+            document.getElementById('inputValue').value = '';
+            document.getElementById('inputTags').value = '';
+
+            refreshDataList();
+            updateGlobalStats();
+            showToast(`✅ 已写入: ${key}`);
+        };
+
+        window.searchData = function() {
+            refreshDataList();
+        };
+
+        function refreshDataList() {
+            if (!window.taoNode) return;
+
+            const query = document.getElementById('inputSearch').value.trim();
+            let items;
+
+            if (query) {
+                items = window.taoNode.search(query);
+            } else {
+                items = window.taoNode.list();
+            }
+
+            const container = document.getElementById('dataList');
+
+            if (!items || items.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-icon">☯</span>
+                        <p>${query ? '未找到匹配数据' : '暂无数据 — 写入你的第一条"道"'}</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = items.map(item => {
+                const hexagramIcons = { Zhun: '🌱', Jiji: '✅', Tai: '🔥', Pi: '❄️', Bo: '🚨', Kun: '🏛️' };
+                const icon = hexagramIcons[item.hexagram] || '📦';
+                const tagsHtml = (item.tags || []).map(t =>
+                    `<span class="tag">${t}</span>`
+                ).join('');
+
+                return `
+                    <div class="data-item">
+                        <div class="data-item-header">
+                            <span class="data-hexagram">${icon}</span>
+                            <span class="data-key">${escapeHtml(item.key)}</span>
+                            <span class="data-heat">🔥 ${item.heat || 0}</span>
+                        </div>
+                        <div class="data-value">${escapeHtml(item.value || '')}</div>
+                        ${tagsHtml ? `<div class="data-tags">${tagsHtml}</div>` : ''}
+                        <div class="data-id mono">${item.id || ''}</div>
+                    </div>`;
+            }).join('');
+        }
+
+        // ============================================================
+        // 导出/导入
+        // ============================================================
+        window.exportBackup = function() {
+            if (!window.taoNode) { alert('请先启动节点'); return; }
+            const json = window.taoNode.export_backup();
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tao-backup-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('💾 备份已下载');
+        };
+
+        window.importBackup = function(event) {
+            if (!window.taoNode) { alert('请先启动节点'); return; }
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const count = window.taoNode.import_backup(e.target.result);
+                refreshDataList();
+                updateGlobalStats();
+                showToast(`📦 已导入 ${count} 条数据`);
+            };
+            reader.readAsText(file);
+        };
+
+        window.clearData = function() {
+            if (!window.taoNode) return;
+            if (!confirm('确定清空所有数据？')) return;
+            window.taoNode = window.taoNode.constructor === TaoBrowserNode
+                ? new TaoBrowserNode()
+                : new JsTaoNode();
+            refreshDataList();
+            updateGlobalStats();
+            showToast('🗑️ 已清空');
+        };
+
+        // ============================================================
+        // 邀请系统
+        // ============================================================
+        window.createInvite = function() {
+            const nodeId = window.taoNode ? window.taoNode.get_node_id() : generate_node_id();
+            const inviteCode = btoa(nodeId).slice(0, 12);
+            const link = `${window.location.origin}?invite=${inviteCode}`;
+
+            document.getElementById('inviteLink').value = link;
+            document.getElementById('inviteModal').classList.add('active');
+        };
+
+        window.copyInvite = function() {
+            const input = document.getElementById('inviteLink');
+            input.select();
+            navigator.clipboard.writeText(input.value).then(() => {
+                showToast('📋 已复制邀请链接');
+            });
+        };
+
+        window.closeModal = function() {
+            document.getElementById('inviteModal').classList.remove('active');
+        };
+
+        // ============================================================
+        // 全局统计
+        // ============================================================
+        function updateGlobalStats() {
+            if (window.taoNode) {
+                const stats = window.taoNode.stats();
+                if (stats) {
+                    document.getElementById('storedObjects').textContent = stats.objects || 0;
+                    document.getElementById('myPeers').textContent = stats.peers || 0;
+                }
+            }
+            // 全球节点数使用 localStorage 模拟
+            updateGlobalNodeCount();
+        }
+
+        function updateGlobalNodeCount() {
+            let count = parseInt(localStorage.getItem('tao_global_nodes') || '0');
+            if (window.taoNode && !localStorage.getItem('tao_registered')) {
+                count++;
+                localStorage.setItem('tao_global_nodes', count.toString());
+                localStorage.setItem('tao_registered', '1');
+            }
+            document.getElementById('globalNodes').textContent = count + 1; // +1 当前节点
+        }
+
+        // ============================================================
+        // 工具
+        // ============================================================
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showToast(msg) {
+            let toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        // ============================================================
+        // JS 降级实现 (当 WASM 不可用时)
+        // ============================================================
+        class JsTaoNode {
+            constructor() {
+                this.node_id = generate_node_id();
+                this.storage = JSON.parse(localStorage.getItem('tao_storage') || '[]');
+                this.peers = [];
+                this.connected = false;
+            }
+
+            get_node_id() { return this.node_id; }
+
+            put(key, value, tags) {
+                const payload = new TextEncoder().encode(value);
+                const hashBuffer = crypto.subtle ? null : null;
+                const hash = this.simpleHash(value);
+                const unit = {
+                    yin: { payload: Array.from(payload), content_hash: hash },
+                    yang: { name: key, created_at: Math.floor(Date.now()/1000), tags: Array.from(tags || []), heat: 0 },
+                    qi: { hexagram: 'Zhun', replica_count: 1 }
+                };
+                this.storage.push(unit);
+                localStorage.setItem('tao_storage', JSON.stringify(this.storage));
+                return hash;
+            }
+
+            get(key) {
+                const unit = this.storage.find(u => u.yang.name === key);
+                if (!unit) return null;
+                return JSON.stringify(unit);
+            }
+
+            list() {
+                return this.storage.map(u => ({
+                    key: u.yang.name,
+                    tags: u.yang.tags,
+                    heat: u.yang.heat,
+                    hexagram: u.qi.hexagram,
+                    id: u.yin.content_hash,
+                    value: new TextDecoder().decode(new Uint8Array(u.yin.payload))
+                }));
+            }
+
+            search(query) {
+                const q = query.toLowerCase();
+                return this.storage.filter(u => {
+                    const name = u.yang.name.toLowerCase();
+                    const payload = new TextDecoder().decode(new Uint8Array(u.yin.payload)).toLowerCase();
+                    const tags = u.yang.tags.join(' ').toLowerCase();
+                    return name.includes(q) || payload.includes(q) || tags.includes(q);
+                }).map(u => ({
+                    key: u.yang.name,
+                    tags: u.yang.tags,
+                    heat: u.yang.heat,
+                    hexagram: u.qi.hexagram,
+                    id: u.yin.content_hash,
+                    value: new TextDecoder().decode(new Uint8Array(u.yin.payload))
+                }));
+            }
+
+            stats() {
+                return {
+                    node_id: this.node_id,
+                    objects: this.storage.length,
+                    peers: this.peers.length,
+                    connected: this.connected,
+                    tags: [...new Set(this.storage.flatMap(u => u.yang.tags))]
+                };
+            }
+
+            export_backup() { return JSON.stringify(this.storage, null, 2); }
+
+            import_backup(json) {
+                try {
+                    const data = JSON.parse(json);
+                    this.storage.push(...data);
+                    localStorage.setItem('tao_storage', JSON.stringify(this.storage));
+                    return data.length;
+                } catch(e) { return 0; }
+            }
+
+            simpleHash(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    const chr = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + chr;
+                    hash |= 0;
+                }
+                return Math.abs(hash).toString(16).padStart(8, '0');
+            }
+        }
+
+        // ============================================================
+        // 检查 URL 参数中的邀请码
+        // ============================================================
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('invite')) {
+            showToast(`🎉 通过邀请链接加入! 邀请码: ${params.get('invite')}`);
+        }
+
+        // ============================================================
+        // 页面加载后自动启动 (可选)
+        // ============================================================
+        console.log('🦀 TaoStorage 浏览器节点已加载');
+        window.refreshDataList = refreshDataList;
+        window.updateGlobalStats = updateGlobalStats;
+    </script>
+</body>
+</html>

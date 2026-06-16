@@ -1,0 +1,14 @@
+{
+  "name": "taostorage-signaling",
+  "version": "0.3.0",
+  "description": "TaoStorage WebSocket 信令服务器 — 浏览器节点 P2P 连接协商",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  },
+  "license": "Apache-2.0"
+}

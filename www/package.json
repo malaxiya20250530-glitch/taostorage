@@ -1,0 +1,12 @@
+{
+  "name": "taostorage-www",
+  "version": "0.3.0",
+  "description": "🦀 TaoStorage 浏览器节点 — P2P 存储网络的前端",
+  "scripts": {
+    "start": "cd signaling-server && npm install && node server.js",
+    "dev": "cd signaling-server && node --watch server.js",
+    "build:wasm": "wasm-pack build tao-browser --target web --out-dir ../pkg",
+    "deploy": "npm run build:wasm && echo '✅ WASM built, ready for deploy'"
+  },
+  "license": "Apache-2.0"
+}

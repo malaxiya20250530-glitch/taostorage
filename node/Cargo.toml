@@ -1,0 +1,18 @@
+[package]
+name = "tao-node"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+tao-core = { path = "../core" }
+tao-crypto = { path = "../crypto" }
+tao-network = { path = "../network" }
+tao-consensus = { path = "../consensus" }
+tao-wasm-host = { path = "../wasm_host" }
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+anyhow.workspace = true
+hex.workspace = true
+clap.workspace = true
+ed25519-dalek.workspace = true
