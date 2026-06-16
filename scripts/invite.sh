@@ -46,7 +46,7 @@ generate_code() {
     # 写入邀请码
     local invites=$(cat "${INVITE_FILE}")
     invites=$(echo "${invites}" | jq --arg c "$code" --arg n "$node_id" --argjson e "$expires" \
-        '. + {($c): {code: $c, inviter: $n, created_at: $expires, expires_at: $e, uses: 0, max_uses: 0, active: true}}')
+        '. + {($c): {code: $c, inviter: $n, created_at: $e, expires_at: $e, uses: 0, max_uses: 0, active: true}}')
     echo "${invites}" > "${INVITE_FILE}"
 
     echo -e "${GREEN}✅ 邀请码已生成: ${BOLD}${code}${NC}"
