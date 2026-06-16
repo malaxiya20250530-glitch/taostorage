@@ -6,7 +6,8 @@
 use serde::{Deserialize, Serialize};
 use sha2::{Sha256, Digest};
 use wasm_bindgen::prelude::*;
-use wasm_bindgen_futures::JsFuture;
+use wasm_bindgen::closure::Closure;
+use wasm_bindgen::JsCast;
 use web_sys::console;
 
 // ============================================================
