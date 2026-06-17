@@ -1,3 +1,0 @@
-[workspace]
-members = ["tao-browser"]
-resolver = "2"

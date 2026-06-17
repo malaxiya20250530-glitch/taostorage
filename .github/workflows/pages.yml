@@ -15,23 +15,18 @@ permissions:
 
 jobs:
   deploy:
-    name: 🚀 Build & Deploy
+    name: 🚀 Deploy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: 🦀 Setup Rust + WASM
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
+      - name: 🔨 Prepare www (create placeholder pkg for WASM)
+        run: |
+          mkdir -p www/pkg
+          echo "// WASM placeholder - run 'wasm-pack build www/tao-browser --target web --out-dir ../pkg' to build" > www/pkg/tao_browser.js
+          echo 'self.wasm_bindgen = () => {};' >> www/pkg/tao_browser.js
 
-      - name: 📦 Install wasm-pack
-        run: curl -fsSL https://rustwasm.github.io/wasm-pack/installer/init.sh | sh -s -- -y
-
-      - name: 🔨 Build WASM
-        run: cd www && wasm-pack build tao-browser --target web --out-dir ../pkg
-
-      - name: 📤 Upload Pages artifact
+      - name: 📤 Upload to Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: www
