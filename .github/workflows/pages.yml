@@ -13,21 +13,14 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
   deploy:
     name: 🚀 Build & Deploy
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: 🦀 Setup Rust + WASM target
+      - name: 🦀 Setup Rust + WASM
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
@@ -37,12 +30,10 @@ jobs:
         with:
           version: 'latest'
 
-      - name: 🔨 Build WASM module
+      - name: 🔨 Build WASM
         run: |
           cd www
           wasm-pack build tao-browser --target web --out-dir ../pkg
-          ls -la ../pkg/
-          cd ..
 
       - name: 📤 Upload to Pages
         uses: actions/upload-pages-artifact@v3
