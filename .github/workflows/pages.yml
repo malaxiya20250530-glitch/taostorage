@@ -1,4 +1,4 @@
-name: 🌐 Deploy WASM Browser Node
+name: 🌐 Deploy Browser Node
 
 on:
   push:
@@ -18,39 +18,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: 🌐 Build Browser Node
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 🦀 Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-
-      - name: 📦 Install wasm-pack
-        run: curl -fsSL https://rustwasm.github.io/wasm-pack/installer/init.sh | sh -s -- -y
-
-      - name: 🔨 Build WASM
-        run: |
-          cd www
-          wasm-pack build tao-browser --target web --out-dir ../pkg
-          cd ..
-
-      - name: 📤 Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: www
-
   deploy:
-    name: 🚀 Deploy to Pages
-    needs: build
+    name: 🚀 Build & Deploy
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
+
+      - name: 🦀 Setup Rust + WASM target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: 📦 Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4
+        with:
+          version: 'latest'
+
+      - name: 🔨 Build WASM module
+        run: |
+          cd www
+          wasm-pack build tao-browser --target web --out-dir ../pkg
+          ls -la ../pkg/
+          cd ..
+
+      - name: 📤 Upload to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: www
+
       - name: 🚀 Deploy
         id: deployment
         uses: actions/deploy-pages@v4
