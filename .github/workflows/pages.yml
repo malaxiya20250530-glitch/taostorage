@@ -26,16 +26,12 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: 📦 Install wasm-pack
-        uses: jetli/wasm-pack-action@v0.4
-        with:
-          version: 'latest'
+        run: curl -fsSL https://rustwasm.github.io/wasm-pack/installer/init.sh | sh -s -- -y
 
       - name: 🔨 Build WASM
-        run: |
-          cd www
-          wasm-pack build tao-browser --target web --out-dir ../pkg
+        run: cd www && wasm-pack build tao-browser --target web --out-dir ../pkg
 
-      - name: 📤 Upload to Pages
+      - name: 📤 Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: www
