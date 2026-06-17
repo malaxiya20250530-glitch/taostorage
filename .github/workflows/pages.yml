@@ -3,9 +3,6 @@ name: 🌐 Deploy Browser Node
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'www/**'
-      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -15,16 +12,24 @@ permissions:
 
 jobs:
   deploy:
-    name: 🚀 Deploy
+    name: 🚀 Build & Deploy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: 📤 Upload Pages artifact
+      - name: 📁 Prepare deployment directory
+        run: |
+          mkdir -p _site
+          cp -r www/index.html www/css www/manifest.json www/sw.js _site/
+          # Create placeholder for WASM
+          mkdir -p _site/pkg
+          echo '// WASM placeholder' > _site/pkg/tao_browser.js
+
+      - name: 📤 Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './www'
+          path: './_site'
 
-      - name: 🚀 Deploy to GitHub Pages
+      - name: 🚀 Deploy
         id: deployment
         uses: actions/deploy-pages@v4
