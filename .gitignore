@@ -26,3 +26,4 @@ Thumbs.db
 
 # Generated files
 tao-backup*.json
+www/signaling-server/package-lock.json
