@@ -4,6 +4,9 @@ use tao_core::*;
 
 mod daemon;
 mod invite;
+mod mcp;
+mod history;
+mod query;
 
 // ============================================================
 // Tao CLI — 统一命令行接口
@@ -15,19 +18,18 @@ mod invite;
     version = "0.3.0",
     about = "道存储 — 个人数据仓库 CLI + 分布式网络节点",
     long_about = concat!(
-        "道可道，非常道 — 从单机知识库到分布式道存网络。\n",
+        "道可道，非常道 — AI Agent 知识数据库 + P2P 存储网络\n",
         "The Tao that can be told is not the eternal Tao.\n\n",
         "示例 / Examples:\n",
         "  tao put note \"hello world\" --tag demo                    写入数据\n",
         "  tao get note                                                读取数据\n",
-        "  tao list                                                    列出所有\n",
-        "  tao search hello                                            模糊搜索\n",
-        "  tao by-tag demo                                             标签查询\n",
-        "  tao stats                                                   统计信息\n",
-        "  tao daemon start                                           启动服务\n",
+        "  tao query \"tag:critical AND age>18\"                      高级查询\n",
+        "  tao search hello                                            全文搜索\n",
+        "  tao history note                                            版本历史\n",
+        "  tao rollback note 2                                         回滚版本\n",
+        "  tao mcp                                                     MCP Server\n",
         "  tao daemon start --background                               后台启动\n",
-        "  tao daemon status                                           查看状态\n",
-        "  tao daemon stop                                             停止服务\n"
+        "  tao daemon status                                           查看状态\n"
     )
 )]
 struct Cli {
@@ -100,6 +102,34 @@ enum Commands {
         #[arg(help = "节点 ID (留空显示排行榜)")]
         node_id: Option<String>,
     },
+    /// 高级查询 (DSL: tag:critical, age>18, time>2026-01)
+    Query {
+        #[arg(help = "查询表达式")]
+        expression: String,
+    },
+    /// 查看数据版本历史
+    History {
+        #[arg(help = "数据键名")]
+        key: String,
+    },
+    /// 回滚到指定版本
+    Rollback {
+        #[arg(help = "数据键名")]
+        key: String,
+        #[arg(help = "版本号")]
+        version: u64,
+    },
+    /// 比较两个版本差异
+    Diff {
+        #[arg(help = "数据键名")]
+        key: String,
+        #[arg(help = "版本号 1")]
+        v1: u64,
+        #[arg(help = "版本号 2")]
+        v2: u64,
+    },
+    /// 启动 MCP Server (AI 协议接口)
+    Mcp,
     /// 启动浏览器节点 (HTTP + WebSocket)
     Browser {
         #[arg(short = 'p', long, default_value = "3000", help = "HTTP 端口")]
@@ -159,6 +189,8 @@ fn main() -> anyhow::Result<()> {
             let store = sled::open(path.join("store"))?;
             let tag_index = TagIndex::open(path.join("tags"))?;
             cmd_put(&store, &tag_index, &key, &value, &tag)?;
+            // 自动记录版本历史
+            history::cmd_record_version(&path, &key, &value, &tag, "put");
         }
         Commands::Get { key } => {
             std::fs::create_dir_all(&path)?;
@@ -527,6 +559,21 @@ fn cmd_stats(store: &sled::Db, tag_index: &TagIndex) -> anyhow::Result<()> {
                 Some(id) => invite::cmd_reputation(&path, &id),
                 None => invite::cmd_leaderboard(&path),
             }
+        }
+        Commands::Query { expression } => {
+            query::cmd_query(&path, &expression);
+        }
+        Commands::History { key } => {
+            history::cmd_history(&path, &key);
+        }
+        Commands::Rollback { key, version } => {
+            history::cmd_rollback(&path, &key, version);
+        }
+        Commands::Diff { key, v1, v2 } => {
+            history::cmd_diff(&path, &key, v1, v2);
+        }
+        Commands::Mcp => {
+            mcp::run_mcp_server(path);
         }
         Commands::Browser { port, ws_port } => {
             // 启动浏览器节点服务器
