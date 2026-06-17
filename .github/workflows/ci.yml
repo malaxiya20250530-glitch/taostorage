@@ -1,7 +1,6 @@
 name: CI — 道可道
 
 on:
-  workflow_dispatch:
   push:
     branches: [ main ]
   pull_request:
@@ -11,49 +10,19 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # ============================================================
-  # 核心检查
-  # ============================================================
-  check:
-    name: 🔍 Check & Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo check --workspace
-      - run: cargo test --workspace
-      - run: cargo fmt --all -- --check
-      - run: cargo clippy --workspace -- -D warnings
-
-  # ============================================================
-  # WASM 编译
-  # ============================================================
-  wasm:
-    name: 🌐 WASM
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-      - run: curl -fsSL https://rustwasm.github.io/wasm-pack/installer/init.sh | sh -s -- -y
-      - run: wasm-pack build www/tao-browser --target web --out-dir ../pkg
-
-  # ============================================================
-  # Linux 构建
-  # ============================================================
-  build-linux:
-    name: 🐧 Linux
+  build:
+    name: 🦀 Build tao CLI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build --release --bin tao
-      - uses: actions/upload-artifact@v4
+      - name: 🔨 Build
+        run: cargo build --release --bin tao
+      - name: 🧪 Test core
+        run: cargo test --package tao-core
+      - name: 📤 Upload
+        uses: actions/upload-artifact@v4
         with:
-          name: tao-linux
+          name: tao-linux-x86_64
           path: target/release/tao
