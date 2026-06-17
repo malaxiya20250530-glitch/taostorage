@@ -2,7 +2,8 @@
   "name": "TaoStorage Browser Node",
   "short_name": "TaoStorage",
   "description": "浏览器 P2P 存储节点 — 道可道，非常道",
-  "start_url": "/",
+  "start_url": "/"
+  ,"scope": "/",
   "display": "standalone",
   "background_color": "#0f0f1a",
   "theme_color": "#1a1a2e",

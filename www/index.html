@@ -521,5 +521,17 @@
         window.refreshDataList = refreshDataList;
         window.updateGlobalStats = updateGlobalStats;
     </script>
+  <script>
+    // 注册 PWA Service Worker
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js").then(reg => {
+          console.log("🦀 PWA 已就绪, 作用域:", reg.scope);
+        }).catch(err => {
+          console.log("SW 注册跳过 (非 HTTPS 环境)");
+        });
+      });
+    }
+  </script>
 </body>
 </html>
