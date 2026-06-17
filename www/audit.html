@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>🦀 审计仪表盘</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#e0e0ff;margin:0;padding:20px;max-width:1200px;margin:0 auto}
+h1{color:#00d4aa}.stats{display:flex;gap:20px;margin:20px 0}
+.card{background:#1a1a2e;border:1px solid #2a2a4a;border-radius:12px;padding:20px;flex:1}
+.card h3{margin:0 0 8px;color:#8888aa;font-size:14px}
+.card .value{font-size:32px;font-weight:800;background:linear-gradient(135deg,#00d4aa,#00aaff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+table{width:100%;border-collapse:collapse;margin-top:20px}
+th{text-align:left;padding:12px 8px;border-bottom:2px solid #2a2a4a;color:#8888aa;font-size:13px}
+td{padding:10px 8px;border-bottom:1px solid #1a1a2e;font-size:13px}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;margin:1px}
+.tag.clean{background:rgba(0,212,170,0.2);color:#00d4aa}
+.tag.suspicious{background:rgba(255,170,68,0.2);color:#ffaa44}
+.tag.critical{background:rgba(255,68,102,0.2);color:#ff4466}
+.verdict{font-weight:600}.verified{color:#00d4aa}.contradicted{color:#ff4466}.uncertain{color:#ffaa44}
+</style></head>
+<body>
+<h1>🦀 TaoStorage 审计仪表盘</h1>
+<p>AI 幻觉检测 × 去中心化存储 — 实时审计追踪</p>
+<div class="stats" id="stats">
+  <div class="card"><h3>📦 审计总数</h3><div class="value" id="totalAudits">-</div></div>
+  <div class="card"><h3>✅ 通过</h3><div class="value" id="cleanCount">-</div></div>
+  <div class="card"><h3>⚠️ 可疑</h3><div class="value" id="suspiciousCount">-</div></div>
+  <div class="card"><h3>🚨 严重</h3><div class="value" id="criticalCount">-</div></div>
+</div>
+<div id="loading">加载中...</div>
+<table id="auditTable" style="display:none">
+  <thead><tr><th>时间</th><th>查询</th><th>评分</th><th>标签</th><th>详细</th></tr></thead>
+  <tbody id="auditBody"></tbody>
+</table>
+<script>
+// 由于是静态页面，通过 tao CLI 导出数据渲染
+// 这里直接展示嵌入的演示数据
+const DEMO = [
+  {ts:'2026-06-17T03:30',query:'上海人口有多少？',score:0.35,tag:'critical',verdicts:[{claim:'上海有5000万人口',verdict:'contradicted',conf:0.92}]},
+  {ts:'2026-06-17T03:25',query:'Python 的创始人',score:0.95,tag:'clean',verdicts:[{claim:'Guido van Rossum',verdict:'verified',conf:0.98}]},
+  {ts:'2026-06-17T03:20',query:'月球距离地球',score:0.88,tag:'clean',verdicts:[{claim:'约38.4万公里',verdict:'verified',conf:0.95}]},
+  {ts:'2026-06-17T03:15',query:'最新 iPhone 价格',score:0.45,tag:'suspicious',verdicts:[{claim:'iPhone 17 售价999美元',verdict:'uncertain',conf:0.3}]},
+];
+function render(){
+  document.getElementById('totalAudits').textContent=DEMO.length;
+  document.getElementById('cleanCount').textContent=DEMO.filter(d=>d.tag==='clean').length;
+  document.getElementById('suspiciousCount').textContent=DEMO.filter(d=>d.tag==='suspicious').length;
+  document.getElementById('criticalCount').textContent=DEMO.filter(d=>d.tag==='critical').length;
+  document.getElementById('loading').style.display='none';
+  document.getElementById('auditTable').style.display='';
+  const tbody=document.getElementById('auditBody');
+  DEMO.forEach(d=>{
+    const verdicts=d.verdicts.map(v=>`<span class="verdict ${v.verdict}">${v.verdict}</span> (${(v.conf*100).toFixed(0)}%)`).join('<br>');
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td style="white-space:nowrap">${d.ts.slice(5,16)}</td>
+      <td>${d.query}</td>
+      <td style="font-weight:700;color:${d.score<0.5?'#ff4466':d.score<0.8?'#ffaa44':'#00d4aa'}">${(d.score*100).toFixed(0)}%</td>
+      <td><span class="tag ${d.tag}">${d.tag}</span></td>
+      <td style="font-size:12px;color:#8888aa">${verdicts}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+render();
+</script>
+</body></html>
