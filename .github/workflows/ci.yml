@@ -5,21 +5,26 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
+  check:
+    name: 🔍 cargo check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo check --package tao-core --package tao-crypto
+      
   build:
-    name: 🦀 Build tao CLI
+    name: 🦀 Build tao
+    needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - name: 🔨 Build
-        run: cargo build --release --bin tao
-      - name: 📤 Upload
-        uses: actions/upload-artifact@v4
+      - name: Build tao CLI
+        run: cargo build --release --bin tao --package tao-cli
+      - uses: actions/upload-artifact@v4
         with:
-          name: tao-linux-x86_64
+          name: tao-linux
           path: target/release/tao
