@@ -59,19 +59,19 @@
 
     <main class="main-content">
         <section class="panel panel-data">
-            <h2>📦 我的数据</h2>
+            <h2 data-i18n="dataTitle">📦 我的数据</h2>
             <div class="data-form">
                 <div class="form-row">
-                    <input type="text" id="inputKey" placeholder="Key (如: 道、阴阳、万物)" class="input">
-                    <input type="text" id="inputValue" placeholder="Value (数据内容)" class="input input-wide">
+                    <input type="text" id="inputKey" data-i18n="keyPh" placeholder="Key (如: 道、阴阳、万物)" class="input">
+                    <input type="text" id="inputValue" data-i18n="valPh" placeholder="Value (数据内容)" class="input input-wide">
                 </div>
                 <div class="form-row">
-                    <input type="text" id="inputTags" placeholder="标签 (逗号分隔)" class="input">
-                    <button class="btn btn-accent" onclick="putData()">📝 写入</button>
+                    <input type="text" id="inputTags" data-i18n="tagPh" placeholder="标签 (逗号分隔)" class="input">
+                    <button class="btn btn-accent" onclick="putData()" data-i18n="writeBtn">📝 写入</button>
                 </div>
             </div>
             <div class="data-search">
-                <input type="text" id="inputSearch" placeholder="🔍 搜索数据..." class="input input-wide" oninput="searchData()">
+                <input type="text" id="inputSearch" data-i18n="searchPh" placeholder="🔍 搜索数据..." class="input input-wide" oninput="searchData()">
             </div>
             <div class="data-list" id="dataList">
                 <div class="empty-state">
@@ -82,27 +82,27 @@
         </section>
 
         <section class="panel panel-node">
-            <h2>🌐 节点信息</h2>
+            <h2 data-i18n="nodeTitle">🌐 节点信息</h2>
             <div class="node-info">
                 <div class="info-row">
-                    <span class="info-label">节点 ID</span>
+                    <span class="info-label" data-i18n="nodeId">节点 ID</span>
                     <span class="info-value mono" id="nodeId">—</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">状态</span>
+                    <span class="info-label" data-i18n="status">状态</span>
                     <span class="info-value" id="networkStatus">⏸️ 未启动</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">热度</span>
+                    <span class="info-label" data-i18n="heat">热度</span>
                     <span class="info-value" id="nodeHeat">🌱 屯卦 (初生)</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">版本</span>
+                    <span class="info-label" data-i18n="ver">版本</span>
                     <span class="info-value">v0.3.0</span>
                 </div>
             </div>
             <div class="node-actions">
-                <button class="btn btn-outline" onclick="exportBackup()">💾 导出备份</button>
+                <button class="btn btn-outline" onclick="exportBackup()" data-i18n="exportBtn">💾 导出备份</button>
                 <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📂 导入</button>
                 <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
                 <button class="btn btn-outline" onclick="createInvite()">📤 邀请</button>
@@ -113,27 +113,86 @@
 
     <div class="modal-overlay" id="inviteModal">
         <div class="modal">
-            <h2>📤 邀请好友</h2>
-            <p>分享链接，邀请更多人加入 TaoStorage 网络！</p>
+            <h2 data-i18n="inviteTitle">📤 邀请好友</h2>
+            <p data-i18n="inviteDesc">分享链接，邀请更多人加入 TaoStorage 网络！</p>
             <div class="invite-box">
                 <input type="text" id="inviteLinkInput" readonly class="input input-wide" onclick="this.select()">
-                <button class="btn btn-primary" onclick="copyInvite()">📋 复制</button>
+                <button class="btn btn-primary" onclick="copyInvite()" data-i18n="copyBtn">📋 复制</button>
             </div>
-            <p class="invite-hint">🏆 每邀请一人，节点信誉 +10</p>
-            <button class="btn btn-ghost" onclick="closeModal()">关闭</button>
+            <p class="invite-hint" data-i18n="inviteHint">🏆 每邀请一人，节点信誉 +10</p>
+            <button class="btn btn-ghost" onclick="closeModal()" data-i18n="closeBtn">关闭</button>
         </div>
     </div>
 
     <script>/* === App Logic === */
 'use strict'; let _node=null;
+
+const I18N = {
+  zh: {
+    hero: '你的数据，<span class="highlight">你的道</span>',
+    sub: '浏览器即节点 — 每个访问者都是 P2P 存储网络的一部分',
+    startNode: '🌐 启动节点', inviteBtn: '📤 邀请好友', demoBtn: '🎬 载入演示数据',
+    statNodes: '🌍 当前节点', statObjs: '📦 存储对象', statPeers: '🔗 对等节点',
+    dataTitle: '📦 我的数据',
+    keyPh: 'Key (如: 道、阴阳、万物)', valPh: 'Value (数据内容)', tagPh: '标签 (逗号分隔)',
+    writeBtn: '📝 写入', searchPh: '🔍 搜索数据...',
+    emptyText: '暂无数据 — 点击"载入演示数据"体验',
+    nodeTitle: '🌐 节点信息', nodeId: '节点 ID', status: '状态',
+    heat: '热度', ver: '版本', exportBtn: '💾 导出备份', importBtn: '📂 导入',
+    inviteTitle: '📤 邀请好友', inviteDesc: '分享链接，邀请更多人加入 TaoStorage 网络！',
+    inviteHint: '🏆 每邀请一人，节点信誉 +10',
+    closeBtn: '关闭', copyBtn: '📋 复制',
+    langSwitch: '🌐 EN', notStarted: '⏸️ 未启动',
+    started: '✅ 节点已启动', ready: '✅ 已就绪'
+  },
+  en: {
+    hero: 'Your Data, <span class="highlight">Your Tao</span>',
+    sub: 'Browser as Node — Every visitor is part of the P2P storage network',
+    startNode: '🌐 Start Node', inviteBtn: '📤 Invite', demoBtn: '🎬 Load Demo',
+    statNodes: '🌍 Nodes', statObjs: '📦 Objects', statPeers: '🔗 Peers',
+    dataTitle: '📦 My Data',
+    keyPh: 'Key (e.g. tao, yin-yang)', valPh: 'Value (data content)', tagPh: 'Tags (comma sep.)',
+    writeBtn: '📝 Write', searchPh: '🔍 Search...',
+    emptyText: 'No data — Click "Load Demo" to try',
+    nodeTitle: '🌐 Node Info', nodeId: 'Node ID', status: 'Status',
+    heat: 'Heat', ver: 'Version', exportBtn: '💾 Export', importBtn: '📂 Import',
+    inviteTitle: '📤 Invite Friends', inviteDesc: 'Share this link to invite others to join TaoStorage!',
+    inviteHint: '🏆 +10 reputation per invite',
+    closeBtn: 'Close', copyBtn: '📋 Copy',
+    langSwitch: '🌐 中文', notStarted: '⏸️ Not Started',
+    started: '✅ Node Running', ready: '✅ Ready'
+  }
+};
+window._lang = localStorage.getItem('tao_lang') || 'zh';
+function applyLang() {
+  const l = I18N[window._lang] || I18N.zh;
+  document.querySelector('h1').innerHTML = l.hero;
+  document.getElementById('heroSubtitle').textContent = l.sub;
+  document.getElementById('btnStartNode').textContent = l.startNode;
+  document.getElementById('btnLang').textContent = l.langSwitch;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (l[key] !== undefined) {
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = l[key];
+      else el.innerHTML = l[key];
+    }
+  });
+  if (document.getElementById('emptyText')) document.getElementById('emptyText').textContent = l.emptyText;
+}
+function switchLang() {
+  window._lang = window._lang === 'zh' ? 'en' : 'zh';
+  localStorage.setItem('tao_lang', window._lang);
+  applyLang();
+}
+
 async function initNode(){
     _node=new JsTaoNode();
     document.getElementById('nodeId').textContent=_node.node_id;
     document.getElementById('nodeStatus').querySelector('.status-dot').className='status-dot online';
     document.getElementById('nodeStatus').querySelector('.status-text').textContent='运行中';
-    document.getElementById('networkStatus').textContent='✅ 已就绪';
+    document.getElementById('networkStatus').textContent=I18N[window._lang].ready;
     document.getElementById('nodeHeat').textContent='🌱 屯卦 (初生)';
-    document.getElementById('btnStartNode').textContent='✅ 节点已启动';
+    document.getElementById('btnStartNode').textContent=I18N[window._lang].started;
     document.getElementById('btnStartNode').disabled=true;
     updateStats();
 }
@@ -230,7 +289,8 @@ function switchLang(){showToast('🌐 English version coming soon')}
 function esc(s){if(!s)return '';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function showToast(m){let t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300)},2500)}
 
-// Auto-init on page load
+applyLang();
+    // Auto-init on page load
 document.addEventListener('DOMContentLoaded',()=>{
     const params=new URLSearchParams(window.location.search);
     if(params.get('invite'))showToast('🎉 通过邀请链接加入!');
