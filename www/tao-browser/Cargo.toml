@@ -1,6 +1,7 @@
 [package]
 name = "tao-browser"
 version = "0.3.0"
+workspace = {}
 edition = "2021"
 description = "TaoStorage WASM browser node — 在浏览器中运行 P2P 存储节点"
 
