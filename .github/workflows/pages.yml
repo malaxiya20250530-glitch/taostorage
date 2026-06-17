@@ -20,17 +20,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: 🔨 Prepare www (create placeholder pkg for WASM)
-        run: |
-          mkdir -p www/pkg
-          echo "// WASM placeholder - run 'wasm-pack build www/tao-browser --target web --out-dir ../pkg' to build" > www/pkg/tao_browser.js
-          echo 'self.wasm_bindgen = () => {};' >> www/pkg/tao_browser.js
-
-      - name: 📤 Upload to Pages
+      - name: 📤 Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: www
+          path: './www'
 
-      - name: 🚀 Deploy
+      - name: 🚀 Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
