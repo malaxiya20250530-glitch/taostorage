@@ -10,6 +10,7 @@ members = [
     "cli",
     "rules/default_qi",
     "invite-system",
+    "www/tao-browser",
 ]
 
 [workspace.package]
