@@ -462,3 +462,55 @@ curl -fsSL https://tao.storage/install.sh | bash
 **[https://tao.storage](https://tao.storage)** — 打开就是节点
 
 </div>
+
+---
+
+## 🚀 v0.3.0+ 新增能力
+
+### 🔍 Query DSL — 高级查询语言
+```bash
+tao query "tag:critical"                    # 标签查询
+tao query "age>18"                          # JSON 字段比较
+tao query "time>2026-01 AND tag:critical"   # 组合条件
+tao query "severity:high OR tag:error"      # OR 条件
+```
+
+### ⏳ 版本历史 — Git for Data
+```bash
+tao put note "v1 content"                   # 自动记录 v1
+tao put note "v2 content"                   # 自动记录 v2
+tao history note                            # 查看全部版本
+tao rollback note 1                         # 回滚到 v1
+tao diff note 1 2                           # 比较版本差异
+```
+
+### 🤖 MCP Server — AI Agent 接入
+```bash
+tao mcp                                     # 启动 MCP Server
+```
+然后在 AI 工具中配置:
+```json
+{
+  "mcpServers": {
+    "tao": { "command": "tao", "args": ["mcp"] }
+  }
+}
+```
+
+### 📊 现有能力
+| 命令 | 功能 |
+|:-----|:------|
+| `tao put <key> <value> --tag <t>` | 写入/更新数据，自动记录版本 |
+| `tao get <key>` | 读取数据 |
+| `tao delete <key>` | 删除数据 |
+| `tao list` | 列出所有 |
+| `tao search <query>` | 全文搜索 |
+| `tao by-tag <tag>` | 标签查询 |
+| `tao tag-cloud` | 标签云统计 |
+| `tao stats` | 存储统计 |
+| `tao export/import` | 备份/恢复 |
+| `tao invite generate | use | leaderboard` | 邀请系统 |
+| `tao reputation` | 排行榜 |
+| `tao daemon start --background` | 守护进程 |
+| `tao browser --port 3000` | 浏览器节点 |
+| `tao mcp` | MCP Server (AI 接口) |
